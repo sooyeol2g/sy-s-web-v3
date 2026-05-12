@@ -21,7 +21,7 @@ export default function ViewerPage() {
       const pdfjsLib = await import('pdfjs-dist');
       pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
 
-      const pdf = await pdfjsLib.getDocument('/학습지.pdf').promise;
+      const pdf = await pdfjsLib.getDocument('/worksheet.pdf').promise;
       setStatus('');
 
       const container = containerRef.current;
