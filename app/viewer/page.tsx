@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 export default function ViewerPage() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef(null);
   const [ip, setIp] = useState('로딩 중...');
   const [status, setStatus] = useState('불러오는 중...');
 
@@ -19,7 +19,8 @@ export default function ViewerPage() {
 
     async function renderPDF() {
       const pdfjsLib = await import('pdfjs-dist');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
 
       const pdf = await pdfjsLib.getDocument('/worksheet.pdf').promise;
       setStatus('');
@@ -31,29 +32,25 @@ export default function ViewerPage() {
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
 
-        // 고화질: devicePixelRatio 반영
         const dpr = window.devicePixelRatio || 1;
         const baseScale = Math.min(2.0, (window.innerWidth - 32) / page.getViewport({ scale: 1 }).width);
         const viewport = page.getViewport({ scale: baseScale * dpr });
 
-        // 래퍼
         const wrap = document.createElement('div');
         wrap.style.cssText = `position:relative; margin:0 auto 24px; width:${viewport.width / dpr}px; height:${viewport.height / dpr}px; box-shadow:0 4px 24px rgba(0,0,0,0.5); border-radius:4px; overflow:hidden;`;
 
-        // PDF 캔버스
         const pdfCanvas = document.createElement('canvas');
         pdfCanvas.width = viewport.width;
         pdfCanvas.height = viewport.height;
         pdfCanvas.style.cssText = `width:${viewport.width / dpr}px; height:${viewport.height / dpr}px; display:block;`;
-        await page.render({ canvasContext: pdfCanvas.getContext('2d')!, viewport }).promise;
+        await page.render({ canvasContext: pdfCanvas.getContext('2d'), viewport }).promise;
 
-        // 워터마크 캔버스
         const wm = document.createElement('canvas');
         wm.width = viewport.width;
         wm.height = viewport.height;
         wm.style.cssText = `position:absolute; top:0; left:0; width:${viewport.width / dpr}px; height:${viewport.height / dpr}px; pointer-events:none;`;
 
-        const ctx = wm.getContext('2d')!;
+        const ctx = wm.getContext('2d');
         const text = `이수열 학습지  |  ${ip}`;
         const fontSize = Math.max(14, viewport.width * 0.022);
         ctx.font = `bold ${fontSize}px sans-serif`;
@@ -83,7 +80,6 @@ export default function ViewerPage() {
 
   return (
     <div style={{ background: '#1a1a1a', minHeight: '100vh' }}>
-      {/* 헤더 */}
       <div style={{ position: 'sticky', top: 0, zIndex: 100, background: '#111', borderBottom: '1px solid #333', padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>📄 학습지 뷰어</span>
         <span style={{ color: '#888', fontSize: 12, background: '#222', border: '1px solid #333', borderRadius: 6, padding: '4px 10px' }}>
@@ -91,15 +87,12 @@ export default function ViewerPage() {
         </span>
       </div>
 
-      {/* 상태 메시지 */}
       {status && (
         <p style={{ color: '#888', textAlign: 'center', paddingTop: 60, fontSize: 14 }}>{status}</p>
       )}
 
-      {/* PDF 렌더링 영역 */}
       <div ref={containerRef} style={{ padding: '32px 16px 60px', maxWidth: 900, margin: '0 auto' }} />
 
-      {/* 우클릭 방지 */}
       <style>{`* { -webkit-user-select: none; user-select: none; } body { margin: 0; }`}</style>
     </div>
   );
